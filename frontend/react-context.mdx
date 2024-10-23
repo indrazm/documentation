@@ -1,0 +1,101 @@
+---
+title: React Context
+---
+
+When you have multiple Context Providers (e.g., around 10), it's important to structure your code in a way that keeps your application maintainable and understandable. Here are some best practices to consider when structuring your context providers:
+
+1. Create a Separate File for Each Context
+   Instead of having all your context logic in a single file, create a separate file for each context. This keeps your code organized and allows you to manage and maintain each context independently.
+
+Example File Structure:
+
+```
+src/
+  ├── context/
+  │   ├── AuthContext.js
+  │   ├── ThemeContext.js
+  │   ├── LanguageContext.js
+  │   ├── UserContext.js
+  │   ├── SettingsContext.js
+  │   └── index.js
+  ├── components/
+  │   └── App.js
+  └── ...
+
+```
+
+2. Create an index.js File for Context Exports
+   In your context folder, you can create an index.js file that exports all your contexts. This makes it easier to import them elsewhere in your application.
+
+Example src/context/index.ts:
+
+```ts
+export { AuthProvider, useAuth } from "./AuthContext";
+export { ThemeProvider, useTheme } from "./ThemeContext";
+export { LanguageProvider, useLanguage } from "./LanguageContext";
+export { UserProvider, useUser } from "./UserContext";
+export { SettingsProvider, useSettings } from "./SettingsContext";
+```
+
+3. Combine Providers in a Higher-Level Component
+   You can create a higher-level component that wraps all your context providers. This can also be placed in a separate file, typically called something like AppProviders.js.
+
+Example AppProviders.js:
+
+```ts
+import React from "react";
+import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
+import { UserProvider } from "./context/UserContext";
+import { SettingsProvider } from "./context/SettingsContext";
+
+const AppProviders = ({ children }) => {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <UserProvider>
+            <SettingsProvider>{children}</SettingsProvider>
+          </UserProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </AuthProvider>
+  );
+};
+
+export default AppProviders;
+```
+
+4. Use the Combined Provider in Your Main App Component
+   Now, you can wrap your main App component (often found in App.js) with your AppProviders component.
+
+```ts
+import React from "react";
+import AppProviders from "./AppProviders";
+import MainComponent from "./MainComponent";
+
+const App = () => {
+  return (
+    <AppProviders>
+      <MainComponent />
+    </AppProviders>
+  );
+};
+
+export default App;
+```
+
+5. Use Custom Hooks to Simplify Access
+   For each context, create custom hooks that allow components to easily access the context values. This abstracts away the use of Context and makes it easier to work with.
+
+6. Consider Performance Implications
+   If you’re using multiple contexts, monitor performance and rendering behavior. If you have components that consume values from multiple contexts, you might find that re-renders happen more frequently than desired. Consider using React.memo or React.useMemo appropriately to optimize rendering.
+
+Summary
+
+- Structure each context in its own file.
+- Create an index file for easier imports.
+- Combine your contexts in a single provider component to keep your main App clean.
+- Use custom hooks for easy access to context data.
+- Keep performance in mind, especially with many contexts in use.

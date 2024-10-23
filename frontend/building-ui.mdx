@@ -1,0 +1,91 @@
+---
+title: Building UI with React
+---
+
+Base UI Should be Reusable and easy to use. No complexity to be added when calling the Component.
+
+### Why it matters
+
+- **Reusability**: Reusable components reduce the amount of code to write and maintain.
+- **Easy to use**: Easy to use components are easier to maintain and use.
+- **Easy to debug**: Easy to debug components are easier to understand and debug.
+- **Easy to test**: Easy to test components are easier to test and debug.
+
+### Packages to Use
+
+- [tailwind-variants](https://www.tailwind-variants.org/)
+- [tailwind-merge](https://www.npmjs.com/package/tailwind-merge)
+- [radix](https://www.radix-ui.com/)
+
+#### Example
+
+```ts
+import { twMerge } from "tailwind-merge";
+import { tv, type VariantProps } from "tailwind-variants";
+
+const styles = tv({
+  base: "font-semibold disabled:opacity-50 border block rounded-lg transition duration-150",
+  variants: {
+    variant: {
+      primary: "bg-indigo-700 border-indigo-700 text-white hover:bg-indigo-60 hover:border-indigo-600",
+      secondary: "bg-slate-50 border-slate-100 text-slate-700 hover:bg-slate-200 hover:border-slate-200",
+      outline: "border-slate-300 bg-white text-slate-600  hover:border-slate-400",
+      danger: "bg-rose-600 border-rose-600 text-white hover:bg-rose-700 hover:border-rose-700",
+    },
+    size: {
+      sm: "py-1.5 px-2 text-xs",
+      md: "py-2.5 px-3 text-sm",
+      lg: "py-3 px-4 text-base",
+    },
+  },
+  defaultVariants: {
+    variant: "primary",
+    size: "md",
+  },
+});
+
+type TStyle = VariantProps<typeof styles>;
+interface Props extends TStyle, React.ComponentPropsWithRef<"button"> {}
+
+export const Button = (props: Props) => {
+  return <button {...props} className={twMerge(styles({ ...props }), props.className)} />;
+};
+```
+
+### Important Notes
+
+- Use variant instead of color, intent, etc.
+- Use size instead of height, width
+- Every component should work as native
+
+### Radix UI
+
+Sometimes you need to have headless UI to ease the process of creating the component, Always use Radix UI when you need to have headless UI.
+
+### Practical Application
+
+#### Tooltip
+
+```tsx
+import { Tooltip, Button } from "@/component";
+
+// Bad
+export default function App() {
+  return (
+    <Tooltip text="Hello from Tooltip">
+      {(props) => {
+        return <Button {...props}>Hello</Button>;
+      }}
+    </Tooltip>
+  );
+}
+
+// Good
+export default function App() {
+  return (
+    <Tooltip text="Hello from Tooltip">
+      <Button>Hello</Button>
+    </Tooltip>
+  );
+}
+```

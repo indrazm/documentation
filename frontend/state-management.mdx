@@ -1,0 +1,37 @@
+---
+title: State Management Principles
+---
+
+The most complexity happened when building React Application is comes from state. Sometime, developer using too much State to Manage the UI Changes. And then end up with Props Drilling.
+
+### Principles
+
+#### 1. Limit Context Usage to Global State
+
+Principle: Use Context for managing global state or data that needs to be accessed by multiple components across different levels of the component tree. Avoid using it for state that is only relevant to a few components or when local state suffices.
+
+Rationale: Context can lead to performance issues and unnecessary re-renders if overused. For local component state, it's better to stick with useState or useReducer within the component itself.
+
+#### 2. Keep Context Values Simple and Predictable
+
+Principle: Design your context value to be as simple as possible, ideally an object that encapsulates the state and functions that modify it.
+
+Rationale: Complex structures can become difficult to manage and lead to issues when components consuming the context re-render. Simple structures help in reducing the probability of unintentional modifications and enhance readability.
+
+#### 3. Limit Provider Scope and Nesting
+
+Principle: Only wrap components that actually need access to the context values with the Provider. Avoid excessive nesting of providers.
+
+Rationale: Limiting the scope reduces re-renders and enhances performance. If many components rely on the same context, consider whether these components can be better structured to limit how much of the tree needs access to the context value.
+
+#### 4. Combine with Custom Hooks
+
+Principle: Create custom hooks for each context that encapsulate the logic for consuming the context.
+
+Rationale: By abstracting the logic behind custom hooks (e.g., useAuth, useTheme), you promote reusability, reduce coupling, and make the components cleaner and easier to read. This also makes it easier to switch out context implementations if needed.
+
+#### 5. Be Mindful of Performance Implications
+
+Principle: Monitor and optimize the performance of components that consume context. Use tools like React.memo, React.useMemo, and React.useCallback to prevent unnecessary re-renders.
+
+Rationale: Every time a context value changes, all consuming components re-render. Ensure you minimize expensive computations and unnecessary renders by leveraging React’s performance optimization features.

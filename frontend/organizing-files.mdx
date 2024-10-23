@@ -1,0 +1,94 @@
+---
+title: Organizing Files
+---
+
+Organizing Files while building an application is important for several reasons:
+
+## Why
+
+### Improved Maintainability
+
+- Separation of Concerns: By splitting code into smaller, focused modules, each part of the application handles a specific concern. This makes it easier to understand, maintain, and update the code without affecting other parts of the system.
+- Readability: Smaller, well-organized files are easier to navigate and understand, reducing the cognitive load on developers.
+
+### Reusability
+
+- Modular Components: Code that is split into reusable components or modules can be easily used in different parts of the application or even in different projects. This reduces redundancy and speeds up development.
+- Library Creation: If the code is well-separated, certain modules can be turned into libraries or packages that can be shared across multiple projects.
+
+### Scalability
+
+- Handling Growth: As applications grow in size and complexity, having a well-organized codebase with clearly defined boundaries between modules helps manage and scale the code effectively.
+- Team Collaboration: In larger teams, splitting code into modules allows different team members to work on separate parts of the application simultaneously without causing conflicts.
+
+### Performance Optimization
+
+Code Splitting in Frontend: Techniques like lazy loading and code splitting help in optimizing frontend performance by loading only the necessary code when it's needed, reducing initial load times.
+Microservices Architecture: In backend systems, splitting code into microservices allows for independent scaling, deployment, and management of different parts of the application.
+
+### Testing
+
+- Unit Testing: Smaller, focused modules are easier to test individually, ensuring that each part of the application works as expected.
+- Isolation: Splitting code allows for better isolation of functionalities, making it easier to mock dependencies and perform tests without unintended side effects.
+
+### Error Isolation and Handling
+
+- Fault Tolerance: In a well-split codebase, errors in one part of the system are less likely to affect other parts, allowing for better fault tolerance and easier debugging.
+- Granular Error Handling: You can apply specific error handling strategies to different parts of the application, making your system more robust.
+
+## Practical Implementation
+
+Let say you wanted to split by features, here is the example :
+
+- features-name
+  - components
+  - services
+  - hooks
+  - atom
+- features-name
+
+Those folders will be created in the `features-name` folder, and here is the purpose :
+
+- **components** : Contains all the components on the features
+- **services** : Contains all the services on the features, Ie, a service to get data from an API and doing any aggregation
+- **hooks** : Contains all the hooks on the features
+- **atom** : Contains all the atoms/context on the features
+- **index.ts** : The entry point of the feature
+
+<FileTree>
+  <FileTree.Folder name="components" defaultOpen>
+    <FileTree.File name="layout.tsx" />
+    <FileTree.File name="view.tsx" />
+    <FileTree.File name="header-tabs.tsx" />
+  </FileTree.Folder>
+  <FileTree.Folder name="services" defaultOpen>
+    <FileTree.File name="api.users.ts" />
+    <FileTree.File name="api.posts.ts" />
+    <FileTree.File name="getdata.ts" />
+  </FileTree.Folder>
+  <FileTree.Folder name="hooks" defaultOpen>
+    <FileTree.File name="use-data.ts" />
+  </FileTree.Folder>
+  <FileTree.Folder name="atom" defaultOpen>
+    <FileTree.File name="atom.data.ts" />
+  </FileTree.Folder>
+</FileTree>
+
+In this case, we split the code based on it purpose. For example, on Components we have couple of file :
+
+- layout.tsx : It's a wrapper of the component if applicable.
+- view.tsx : It's core of the component
+- header-tabs.tsx : it would be inside of the layout.
+
+And then services, for example :
+
+```tsx
+function MyComponent() {
+  const { data, loading, error } = getUsers();
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return <ul>{data && data.map((item) => <li key={item.id}>{item.name}</li>)}</ul>;
+}
+```

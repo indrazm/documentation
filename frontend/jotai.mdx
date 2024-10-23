@@ -1,0 +1,88 @@
+---
+title: Jotai
+---
+
+Jotai is a state management library for React that provides a minimalist approach to managing state in applications. It is inspired by React's own hooks and offers granular reactivity, making it easy to manage global state without the boilerplate often associated with other state management solutions.
+
+### Key Features of Jotai:
+
+- Minimalist Design: Jotai has a very simple API and aims to provide a minimalistic way to manage state in React applications. Its concepts are centered around atoms and providers.
+- Atoms: The fundamental unit of state in Jotai is called an "atom." Atoms are pieces of state that can be read from and written to from any component. They can be thought of as individual pieces of state that can be shared across components.
+- Hooks-Based API: Jotai uses hooks, making it easy to integrate into functional components. You can use the useAtom hook to access and manipulate state.
+- Fine-Grained Reactivity: Jotai offers fine-grained reactivity, meaning that components will only re-render when the specific atoms they are subscribed to change. This can lead to performance improvements in larger applications.
+- Support for Derived State: Jotai also allows you to create derived state from other atoms, enabling you to compute values that depend on other pieces of state easily.
+- Built-in Support for Asynchronous State: Jotai provides support for asynchronous state management, making it easier to fetch data and manage loading states.
+
+```tsx
+import React from "react";
+import { atom, useAtom } from "jotai";
+
+const countAtom = atom(0);
+
+const Counter = () => {
+  const [count, setCount] = useAtom(countAtom);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount((c) => c + 1)}>Increment</button>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <div>
+      <h1>Jotai Example</h1>
+      <Counter />
+    </div>
+  );
+};
+
+export default App;
+```
+
+## Common Feature we Might Need
+
+### Jotai with LocalStorage
+
+You would not need to have useState and useEffect anymore to derived atom value from localStorage.
+
+```ts
+import { useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+
+const darkModeAtom = atomWithStorage("darkMode", false);
+
+const Page = () => {
+  const [darkMode, setDarkMode] = useAtom(darkModeAtom);
+
+  return (
+    <>
+      <h1>Welcome to {darkMode ? "dark" : "light"} mode!</h1>
+      <button onClick={() => setDarkMode(!darkMode)}>toggle theme</button>
+    </>
+  );
+};
+```
+
+### Resettable Atoms
+
+```ts
+import { atomWithReset } from "jotai/utils";
+
+const dollarsAtom = atomWithReset(0);
+const todoListAtom = atomWithReset([{ description: "Add a todo", checked: false }]);
+
+const ResetExample = () => {
+  const setDollars = useSetAtom(dollarsAtom);
+  const resetCents = useResetAtom(centsAtom);
+
+  return (
+    <>
+      <button onClick={() => setDollars(RESET)}>Reset dollars</button>
+      <button onClick={resetCents}>Reset cents</button>
+    </>
+  );
+};
+```

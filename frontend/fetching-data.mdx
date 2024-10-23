@@ -1,0 +1,282 @@
+---
+title: Fetching Data
+---
+
+Fetching data is one of the most important thing that always needed when building dynamic app. Here is some example to provide more understanding.
+
+### Using Fetching API
+
+#### Bad Example
+
+```tsx
+import React, { useState, useEffect } from "react";
+
+function BadFetchExample() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch("https://api.example.com/data")
+      .then((response) => response.json())
+      .then((result) => setData(result));
+  }, []);
+
+  return (
+    <div>
+      {data ? (
+        <ul>
+          {data.map((item) => (
+            <li key={item.id}>{item.name}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+}
+```
+
+This example has several issues:
+
+- No error handling
+- No loading state management
+- No retry mechanism
+- Potential memory leak if component unmounts before fetch completes
+
+#### Good Example
+
+```tsx
+import React, { useState, useEffect } from "react";
+
+function GoodFetchExample() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch("https://api.example.com/data");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (isMounted) {
+          setData(result);
+        }
+      } catch (e) {
+        if (isMounted) {
+          setError(e.message);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return (
+    <div>
+      <ul>{data && data.map((item) => <li key={item.id}>{item.name}</li>)}</ul>
+    </div>
+  );
+}
+```
+
+This example improves upon the bad practice by:
+
+- Implementing error handling
+- Managing loading state
+- Preventing memory leaks with an isMounted flag
+- Using async/await for cleaner code
+
+### Using Axios
+
+#### Bad Example
+
+```tsx
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function BadAxiosExample() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    axios.get("https://api.example.com/data").then((response) => setData(response.data));
+  }, []);
+
+  return (
+    <div>
+      {data ? (
+        <ul>
+          {data.map((item) => (
+            <li key={item.id}>{item.name}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+}
+```
+
+This example has several issues:
+
+- No error handling
+- Memory Leaks and Stale State
+
+#### Good Example
+
+```tsx
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function GoodAxiosExample() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const source = axios.CancelToken.source();
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("https://api.example.com/data", {
+          cancelToken: source.token,
+        });
+        setData(response.data);
+      } catch (e) {
+        if (axios.isCancel(e)) {
+          console.log("Request canceled:", e.message);
+        } else {
+          setError(e.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      source.cancel("Component unmounted");
+    };
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return (
+    <div>
+      <ul>{data && data.map((item) => <li key={item.id}>{item.name}</li>)}</ul>
+    </div>
+  );
+}
+```
+
+This example improves upon the bad practice by:
+
+- Loading and Error States
+- Using async/await for cleaner code
+- Cancellation using axios.CancelToken
+
+### Abstracting the API Call function
+
+```tsx
+import { useState, useEffect } from "react";
+import axios from "axios";
+
+function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const source = axios.CancelToken.source();
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(url, { cancelToken: source.token });
+        setData(response.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log("Request canceled:", err.message);
+        } else {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      source.cancel("Component unmounted");
+    };
+  }, [url]);
+
+  return { data, loading, error };
+}
+```
+
+#### Usage
+
+```tsx
+// Usage in a component
+function MyComponent() {
+  const { data, loading, error } = useFetch("https://api.example.com/data");
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return <ul>{data && data.map((item) => <li key={item.id}>{item.name}</li>)}</ul>;
+}
+```
+
+### React Query
+
+React Query is a powerful library for managing server state in React applications. It provides a more declarative way to fetch, cache, and update data.
+
+```tsx
+import { QueryClient, QueryClientProvider, useQuery } from "react-query";
+import axios from "axios";
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <MyComponent />
+    </QueryClientProvider>
+  );
+}
+```
+
+```tsx
+async function getData() {
+  return axios.get("https://api.example.com/data").then((res) => res.data);
+}
+
+function MyComponent() {
+  const { isLoading, error, data } = useQuery("myData", getData);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return <ul>{data && data.map((item) => <li key={item.id}>{item.name}</li>)}</ul>;
+}
+```
